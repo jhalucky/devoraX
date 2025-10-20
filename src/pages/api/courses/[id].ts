@@ -2,7 +2,6 @@ import { prisma } from "../../../lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
   const { userId } = getAuth(req);
@@ -21,7 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === "PUT") {
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
-      const { title, description } = req.body;
+
+      const { title, description } = req.body as { title: string; description: string };
       const updated = await prisma.course.update({
         where: { id },
         data: { title, description },
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     res.status(405).json({ error: "Method not allowed" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in /api/courses/[id]:", error);
     res.status(500).json({ error: "Internal server error" });
   }

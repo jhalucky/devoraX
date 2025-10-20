@@ -17,10 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === "POST") {
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-      const { title, description } = req.body;
-      if (!title || !description) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
+      const { title, description } = req.body as { title: string; description: string };
+      if (!title || !description) return res.status(400).json({ error: "Missing required fields" });
 
       const course = await prisma.course.create({
         data: { title, description },
@@ -29,9 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(405).json({ error: "Method not allowed" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in /api/courses:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
-

@@ -2,7 +2,6 @@ import { prisma } from "../../../lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
 
@@ -18,10 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === "POST") {
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-      const { title, content, courseId } = req.body;
-      if (!title || !content || !courseId) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
+      const { title, content, courseId } = req.body as { title: string; content: string; courseId: string };
+      if (!title || !content || !courseId) return res.status(400).json({ error: "Missing required fields" });
 
       const lesson = await prisma.lesson.create({
         data: { title, content, courseId },
@@ -30,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     res.status(405).json({ error: "Method not allowed" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in /api/lessons:", error);
     res.status(500).json({ error: "Internal server error" });
   }
