@@ -1,6 +1,7 @@
 import { prisma } from "../../../lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import type { NextApiRequest, NextApiResponse } from "next";
+import slugify from "slugify"; // npm install slugify
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
@@ -18,11 +19,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
       const { title, description } = req.body as { title: string; description: string };
-      if (!title || !description) return res.status(400).json({ error: "Missing required fields" });
+      if (!title || !description)
+        return res.status(400).json({ error: "Missing required fields" });
+
+      // ✅ Generate a URL-safe slug from the course title
+      const slug = slugify(title, { lower: true, strict: true });
 
       const course = await prisma.course.create({
-        data: { title, description },
+        data: {
+          title,
+          description,
+          slug, // include the slug here
+        },
       });
+
       return res.status(201).json(course);
     }
 
