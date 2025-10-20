@@ -1,5 +1,4 @@
 import { getAuth } from "@clerk/nextjs/server";
-import { users } from "@clerk/nextjs/dist/server";
 import type { NextApiRequest } from "next";
 
 export async function getUserRole(req: NextApiRequest): Promise<string | null> {
