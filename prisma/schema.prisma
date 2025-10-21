@@ -25,22 +25,23 @@ model Course {
   description String?
   thumbnail   String?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   lessons     Lesson[]
 }
 
 model Lesson {
-  id       String     @id @default(uuid())
-  course   Course     @relation(fields: [courseId], references: [id])
-  courseId String
-  title    String
-  content  String?
-  videoUrl String?
-  order    Int        @default(0)
-   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  quizzes  Quiz[]
-  comments Comment[]
-  progress Progress[]
+  id        String     @id @default(uuid())
+  course    Course     @relation(fields: [courseId], references: [id])
+  courseId  String
+  title     String
+  content   String?
+  videoUrl  String?
+  order     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  quizzes   Quiz[]
+  comments  Comment[]
+  progress  Progress[]
 }
 
 model Quiz {
@@ -48,7 +49,7 @@ model Quiz {
   lesson   Lesson @relation(fields: [lessonId], references: [id])
   lessonId String
   question String
-  options  String // JSON stringified or use Json type if supported
+  options  Json
   answer   String
 }
 
