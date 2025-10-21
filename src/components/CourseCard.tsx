@@ -1,28 +1,34 @@
+import React from "react";
 import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { headingFont, bodyFont } from "@/lib/fonts";
 
 interface CourseCardProps {
   id: string;
   title: string;
   description: string;
-  lessonCount?: number;
+  progress: number;
 }
 
-export default function CourseCard({ id, title, description, lessonCount }: CourseCardProps) {
+export default function CourseCard({ id, title, description, progress }: CourseCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-200 dark:border-gray-800 overflow-hidden">
-      <div className="p-6">
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{description}</p>
-        {lessonCount !== undefined && (
-          <p className="text-xs text-gray-500 mb-3">{lessonCount} lessons</p>
-        )}
-        <Link
-          href={`/courses/${id}`}
-          className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-md font-medium"
-        >
-          View Course
-        </Link>
-      </div>
-    </div>
+    <Link href={`/courses/${id}`}>
+      <Card className="hover:-translate-y-1 hover:shadow-md transition-all cursor-pointer">
+        <CardHeader>
+          <CardTitle className={headingFont.className}>{title}</CardTitle>
+        </CardHeader>
+        <CardContent className={bodyFont.className}>
+          <p className="text-sm text-gray-600 mb-4">{description}</p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-blue-500 h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-xs mt-2 text-gray-500">{progress}% completed</p>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
+
