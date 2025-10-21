@@ -4,26 +4,23 @@ import { prisma } from "../../../lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
-
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    // Get Clerk client instance
     const client = await clerkClient();
-
-    // Fetch the user from Clerk
     const clerkUser = await client.users.getUser(userId);
 
-    // Sync with Prisma
     const user = await prisma.user.upsert({
       where: { email: clerkUser.emailAddresses[0].emailAddress },
-      update: { name: clerkUser.firstName || clerkUser.fullName },
+      update: {
+        name: clerkUser.firstName || clerkUser.fullName || "No Name",
+      },
       create: {
         id: userId,
         name: clerkUser.firstName || clerkUser.fullName || "No Name",
         email: clerkUser.emailAddresses[0].emailAddress,
-        role: "STUDENT", // default role
-        passwordHash: "", // blank if auth handled by Clerk
+        role: "STUDENT",
+        passwordHash: "",
       },
     });
 
@@ -33,3 +30,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: "Internal server error" });
   }
 }
+
