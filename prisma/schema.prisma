@@ -36,6 +36,8 @@ model Lesson {
   content  String?
   videoUrl String?
   order    Int        @default(0)
+   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   quizzes  Quiz[]
   comments Comment[]
   progress Progress[]
