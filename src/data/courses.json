@@ -1,0 +1,30 @@
+{
+    "Core Subjects": {
+      "Mathematics": [
+        { "title": "Algebra Basics", "content": "Algebra introduction..." },
+        { "title": "Calculus I", "content": "Limits, derivatives..." }
+      ],
+      "Physics": [
+        { "title": "Mechanics", "content": "Newton's laws..." },
+        { "title": "Electrodynamics", "content": "Electric fields..." }
+      ],
+      "OOPs": [
+        { "title": "Classes & Objects", "content": "Introduction to classes..." },
+        { "title": "Inheritance", "content": "Parent-child relationships..." }
+      ]
+    },
+    "Data Structures": {
+      "Arrays": [
+        { "title": "1D Arrays", "content": "Introduction to 1D arrays..." }
+      ],
+      "Linked Lists": [
+        { "title": "Singly Linked List", "content": "Node structure and operations..." }
+      ]
+    },
+    "Machine Learning": {
+      "Supervised Learning": [
+        { "title": "Linear Regression", "content": "Predict continuous values..." }
+      ]
+    }
+  }
+  
