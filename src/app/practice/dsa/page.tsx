@@ -6,6 +6,14 @@ import { headingFont, bodyFont } from "@/lib/fonts";
 import problems from "@/data/leetcode_problems.json";
 import { ArrowRightIcon, PlayCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
+type Problem = {
+  id: string;
+  title: string;
+  difficulty: "Easy" | "Medium" | "Hard" | string;
+  description?: string;
+  topics?: string[];
+};
+
 export default function DSADashboard() {
   const [video, setVideo] = useState<{ title: string; videoId: string } | null>(null);
   const [loadingVideo, setLoadingVideo] = useState(false);
@@ -14,10 +22,10 @@ export default function DSADashboard() {
     try {
       setLoadingVideo(true);
       const res = await fetch(`/api/youtube-search?query=${encodeURIComponent(title)}`);
-      const data = await res.json();
-      if (data.videoId) setVideo({ title: data.title, videoId: data.videoId });
+      const data: { videoId?: string; title?: string } = await res.json();
+      if (data.videoId) setVideo({ title: data.title ?? title, videoId: data.videoId });
       else alert("No video found for this problem.");
-    } catch (err) {
+    } catch {
       alert("Error fetching video");
     } finally {
       setLoadingVideo(false);
@@ -30,27 +38,21 @@ export default function DSADashboard() {
         <header className="mb-8 text-center">
           <h1 className={`text-4xl font-semibold ${headingFont.className}`}>DSA Practice</h1>
           <p className="text-gray-600 mt-2">
-            Solve curated LeetCode-style problems with an in-browser IDE — and watch NeetCode
-            explanations instantly!
+            Solve curated LeetCode-style problems with an in-browser IDE — and watch NeetCode explanations instantly!
           </p>
         </header>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {problems.map((p: any) => (
+          {problems.map((p: Problem) => (
             <article
               key={p.id}
               className="group bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] transition-all"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className={`text-lg font-semibold mb-1 ${headingFont.className}`}>
-                    {p.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-2">
-                    {p.topics?.slice(0, 3).join(", ") || "General"}
-                  </p>
+                  <h3 className={`text-lg font-semibold mb-1 ${headingFont.className}`}>{p.title}</h3>
+                  <p className="text-sm text-gray-500 mb-2">{p.topics?.slice(0, 3).join(", ") ?? "General"}</p>
                 </div>
-
                 <span
                   className={`text-xs font-medium px-3 py-1 rounded-full ${
                     p.difficulty === "Easy"
@@ -60,13 +62,11 @@ export default function DSADashboard() {
                       : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {p.difficulty || "Unknown"}
+                  {p.difficulty ?? "Unknown"}
                 </span>
               </div>
 
-              <p className="text-sm text-gray-600 mt-2 line-clamp-3">
-                {p.description?.slice(0, 150) || "No description available."}...
-              </p>
+              <p className="text-sm text-gray-600 mt-2 line-clamp-3">{p.description?.slice(0, 150) ?? "No description available."}...</p>
 
               <div className="mt-5 flex items-center justify-between">
                 <Link
@@ -91,7 +91,6 @@ export default function DSADashboard() {
         </section>
       </div>
 
-      {/* Video Modal */}
       {video && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl relative">

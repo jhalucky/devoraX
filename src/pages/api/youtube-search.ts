@@ -3,9 +3,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { query } = req.query;
+  const queryParam = req.query.query;
+  const query = Array.isArray(queryParam) ? queryParam[0] : queryParam;
 
   if (!query) return res.status(400).json({ error: "Missing query" });
+  if (!YOUTUBE_API_KEY) return res.status(500).json({ error: "Missing YouTube API Key" });
 
   try {
     const searchQuery = `${query} NeetCode LeetCode`;
@@ -25,8 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       thumbnail: video.snippet.thumbnails.medium.url,
       channel: video.snippet.channelTitle,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error(error);
-    return res.status(500).json({ error: "Failed to fetch YouTube data", details: error.message });
+    return res.status(500).json({ error: "Failed to fetch YouTube data", details: message });
   }
 }

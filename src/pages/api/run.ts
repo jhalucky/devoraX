@@ -4,9 +4,9 @@ const JUDGE0_HOST = process.env.JUDGE0_HOST || "judge0-ce.p.rapidapi.com";
 const RAPIDAPI_KEY = process.env.X_RAPIDAPI_KEY;
 
 const languageMap: Record<string, number> = {
-  python: 71,     // Python 3
-  cpp: 54,        // C++ (GCC)
-  javascript: 63, // Node.js
+  python: 71,
+  cpp: 54,
+  javascript: 63,
 };
 
 type RunRequest = {
@@ -21,15 +21,12 @@ type RunResponse = {
   details?: string;
 };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<RunResponse>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<RunResponse>) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { source_code, language, stdin }: RunRequest = req.body;
+  const { source_code, language, stdin = "" }: RunRequest = req.body;
 
   if (!source_code || !language) {
     return res.status(400).json({ error: "Missing source_code or language" });
@@ -37,37 +34,30 @@ export default async function handler(
 
   const language_id = languageMap[language];
 
+  if (!RAPIDAPI_KEY) return res.status(500).json({ error: "Missing RapidAPI Key" });
+
   try {
-    const r = await fetch(
-      `https://${JUDGE0_HOST}/submissions?base64_encoded=false&wait=true`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-RapidAPI-Host": JUDGE0_HOST,
-          "X-RapidAPI-Key": RAPIDAPI_KEY as string,
-        },
-        body: JSON.stringify({
-          source_code,
-          language_id,
-          stdin,
-        }),
-      }
-    );
+    const r = await fetch(`https://${JUDGE0_HOST}/submissions?base64_encoded=false&wait=true`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-RapidAPI-Host": JUDGE0_HOST,
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+      },
+      body: JSON.stringify({ source_code, language_id, stdin }),
+    });
 
     const json = (await r.json()) as Record<string, unknown>;
 
     const output =
-      json.stdout ||
-      json.stderr ||
-      json.compile_output ||
-      json.message ||
-      (json.status as any)?.description ||
+      (json.stdout as string) ||
+      (json.stderr as string) ||
+      (json.compile_output as string) ||
+      ((json.status as any)?.description as string) ||
       "No output";
 
-    return res.status(200).json({ output: output as string });
+    return res.status(200).json({ output });
   } catch (err: unknown) {
-    console.error("run error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return res.status(500).json({ error: "Error executing code", details: message });
   }

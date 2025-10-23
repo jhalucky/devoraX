@@ -10,6 +10,12 @@ interface CodeEditorProps {
   language?: "python" | "cpp" | "javascript";
 }
 
+const languageMap: Record<CodeEditorProps["language"], number> = {
+  python: 71,
+  cpp: 54,
+  javascript: 63,
+};
+
 export default function CodeEditor({ language = "python" }: CodeEditorProps) {
   const [code, setCode] = useState<string>("");
   const [output, setOutput] = useState<string>("");
@@ -17,9 +23,12 @@ export default function CodeEditor({ language = "python" }: CodeEditorProps) {
   const runCode = async () => {
     try {
       setOutput("Running...");
+      const rapidApiKey = process.env.X_RAPIDAPI_KEY;
+      if (!rapidApiKey) throw new Error("Missing RapidAPI Key");
+
       const payload = {
         source_code: code,
-        language_id: language === "python" ? 71 : language === "cpp" ? 54 : 63, // Judge0 IDs
+        language_id: languageMap[language],
         stdin: "",
       };
 
@@ -30,14 +39,15 @@ export default function CodeEditor({ language = "python" }: CodeEditorProps) {
           headers: {
             "Content-Type": "application/json",
             "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-            "X-RapidAPI-Key": process.env.NEXT_PUBLIC_RAPIDAPI_KEY!,
+            "X-RapidAPI-Key": rapidApiKey,
           },
         }
       );
 
-      setOutput(response.data.stdout || response.data.compile_output || response.data.stderr || "No output");
-    } catch (err: any) {
-      setOutput(err.message || "Error running code");
+      const data = response.data;
+      setOutput(data.stdout || data.compile_output || data.stderr || "No output");
+    } catch (err: unknown) {
+      setOutput(err instanceof Error ? err.message : "Error running code");
     }
   };
 
@@ -47,7 +57,7 @@ export default function CodeEditor({ language = "python" }: CodeEditorProps) {
         height="300px"
         language={language}
         value={code}
-        onChange={(value) => setCode(value || "")}
+        onChange={(value) => setCode(value ?? "")}
         theme="vs-dark"
       />
       <button

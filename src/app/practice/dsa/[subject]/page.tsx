@@ -15,7 +15,7 @@ type Problem = {
   starterCode: {
     python: string;
     cpp: string;
-    js: string;
+    javascript: string;
   };
   examples?: { input: string; output: string }[];
 };
@@ -23,25 +23,24 @@ type Problem = {
 const languageOptions = ["python", "cpp", "javascript"] as const;
 type Language = typeof languageOptions[number];
 
+type RunResponse = { output?: string; error?: string };
+
 export default function DSACodeEditor() {
   const params = useParams();
   const problemId = params.subject;
   const problem: Problem | undefined = problems.find((p) => p.id === problemId);
 
   const [language, setLanguage] = useState<Language>("python");
-  const [code, setCode] = useState(problem?.starterCode?.python || "");
-  const [output, setOutput] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
+  const [code, setCode] = useState<string>(problem?.starterCode?.python ?? "");
+  const [output, setOutput] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  // 🎥 State for video popup
   const [video, setVideo] = useState<{ title: string; videoId: string } | null>(null);
-  const [loadingVideo, setLoadingVideo] = useState(false);
+  const [loadingVideo, setLoadingVideo] = useState<boolean>(false);
 
   if (!problem) {
     return (
-      <div
-        className={`min-h-screen flex items-center justify-center text-gray-600 ${bodyFont.className}`}
-      >
+      <div className={`min-h-screen flex items-center justify-center text-gray-600 ${bodyFont.className}`}>
         Problem not found ❌
       </div>
     );
@@ -57,13 +56,11 @@ export default function DSACodeEditor() {
         body: JSON.stringify({
           language,
           source_code: code,
-          stdin: problem.examples?.[0]?.input || "",
+          stdin: problem.examples?.[0]?.input ?? "",
         }),
       });
-      const data = await res.json();
-      setOutput(
-        (data as any).output || (data as any).error || "⚠️ No output received"
-      );
+      const data: RunResponse = await res.json();
+      setOutput(data.output ?? data.error ?? "⚠️ No output received");
     } catch (err: unknown) {
       setOutput(err instanceof Error ? err.message : "Error running code");
     } finally {
@@ -76,15 +73,14 @@ export default function DSACodeEditor() {
     setOutput("");
   };
 
-  // 🎥 Fetch video from API (NeetCode video)
   const handleVideoClick = async (title: string) => {
     try {
       setLoadingVideo(true);
       const res = await fetch(`/api/youtube-search?query=${encodeURIComponent(title + " neetcode")}`);
-      const data = await res.json();
-      if (data.videoId) setVideo({ title: data.title, videoId: data.videoId });
+      const data: { videoId?: string; title?: string } = await res.json();
+      if (data.videoId) setVideo({ title: data.title ?? title, videoId: data.videoId });
       else alert("No NeetCode video found for this problem.");
-    } catch (err) {
+    } catch {
       alert("Error fetching video");
     } finally {
       setLoadingVideo(false);
@@ -92,19 +88,14 @@ export default function DSACodeEditor() {
   };
 
   return (
-    <main
-      className={`min-h-screen bg-[#f9fafb] text-gray-900 px-6 py-10 ${bodyFont.className}`}
-    >
+    <main className={`min-h-screen bg-[#f9fafb] text-gray-900 px-6 py-10 ${bodyFont.className}`}>
       <section className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Problem Description */}
         <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <h1
-              className={`text-3xl font-semibold mb-3 tracking-tight ${headingFont.className}`}
-            >
+            <h1 className={`text-3xl font-semibold mb-3 tracking-tight ${headingFont.className}`}>
               {problem.title}
-              <span className="text-sm font-normal text-gray-500 ml-2">
-                ({problem.difficulty})
-              </span>
+              <span className="text-sm font-normal text-gray-500 ml-2">({problem.difficulty})</span>
             </h1>
           </div>
 
@@ -116,25 +107,18 @@ export default function DSACodeEditor() {
             <div className="mt-4">
               <h2 className="font-semibold text-gray-800 mb-2">Examples:</h2>
               {problem.examples.map((ex, i) => (
-                <div
-                  key={i}
-                  className="mb-3 p-3 bg-gray-50 border rounded-md text-sm"
-                >
-                  <p>
-                    <strong>Input:</strong> {ex.input}
-                  </p>
-                  <p>
-                    <strong>Output:</strong> {ex.output}
-                  </p>
+                <div key={i} className="mb-3 p-3 bg-gray-50 border rounded-md text-sm">
+                  <p><strong>Input:</strong> {ex.input}</p>
+                  <p><strong>Output:</strong> {ex.output}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-      
+        {/* Editor */}
         <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-200">
-          {/* Top Toolbar */}
+          {/* Toolbar */}
           <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
             <div className="flex items-center gap-3">
               <label className="font-medium text-gray-700">Language:</label>
@@ -148,9 +132,7 @@ export default function DSACodeEditor() {
                 className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {languageOptions.map((lang) => (
-                  <option key={lang} value={lang}>
-                    {lang.toUpperCase()}
-                  </option>
+                  <option key={lang} value={lang}>{lang.toUpperCase()}</option>
                 ))}
               </select>
             </div>
@@ -167,14 +149,13 @@ export default function DSACodeEditor() {
                 onClick={runCode}
                 disabled={isRunning}
                 className={`text-sm px-4 py-1.5 rounded-md text-white transition ${
-                  isRunning
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700"
+                  isRunning ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
                 }`}
               >
                 {isRunning ? "Running..." : "Run ▶"}
               </button>
             </div>
+
             <button
               onClick={() => handleVideoClick(problem.title)}
               className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition"
@@ -188,13 +169,13 @@ export default function DSACodeEditor() {
             </button>
           </div>
 
-          {/* Editor */}
+          {/* Monaco Editor */}
           <MonacoEditor
             height="500px"
             language={language}
             theme="vs-light"
             value={code}
-            onChange={(value) => setCode(value || "")}
+            onChange={(value) => setCode(value ?? "")}
             options={{
               minimap: { enabled: false },
               fontSize: 14,
@@ -213,7 +194,7 @@ export default function DSACodeEditor() {
         </div>
       </section>
 
-      {/* 🎥 Video Modal */}
+      {/* Video Modal */}
       {video && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl relative">
