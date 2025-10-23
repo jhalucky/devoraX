@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "EngineersHub",
+  title: "DeVoraX",
   description: "Learn DSA, ML, and Core Subjects all in one place.",
 };
 
