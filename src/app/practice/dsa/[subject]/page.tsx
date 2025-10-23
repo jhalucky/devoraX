@@ -27,7 +27,7 @@ type RunResponse = { output?: string; error?: string };
 
 export default function DSACodeEditor() {
   const params = useParams();
-  const problemId = params.subject;
+  const problemId = params?.subject as string | undefined;
   const problem: Problem | undefined = problems.find((p) => p.id === problemId);
 
   const [language, setLanguage] = useState<Language>("python");
