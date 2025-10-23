@@ -1,16 +1,26 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export default function Home() {
+  const { isSignedIn } = useUser();
   const router = useRouter();
+
+  // Redirect signed-in users to dashboard
+  useEffect(() => {
+    if (isSignedIn) {
+      router.replace("/dashboard");
+    }
+  }, [isSignedIn, router]);
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-4">
       {/* Brand */}
       <h1
         className="text-6xl md:text-7xl font-extrabold mb-6 text-white text-center"
-        style={{ fontFamily: "'Share Tech Mono', monospace" }} // Rare font
+        style={{ fontFamily: "'Share Tech Mono', monospace" }}
       >
         De<span className="text-blue-500">V</span>ora<span className="text-blue-500">X</span>
       </h1>
@@ -20,7 +30,11 @@ export default function Home() {
         className="text-gray-300 text-xl md:text-2xl mb-10 text-center"
         style={{ fontFamily: "'Share Tech Mono', monospace" }}
       >
-        Kitni bhi karle <span className="text-blue-500">mazdoori</span>, <strong><span className="text-blue-500">DSA</span> hai jaroori</strong>.
+        Kitni bhi karle <span className="text-blue-500">mazdoori</span>,{" "}
+        <strong>
+          <span className="text-blue-500">DSA</span> hai jaroori
+        </strong>
+        .
       </p>
 
       {/* Get Started button */}
