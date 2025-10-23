@@ -21,6 +21,14 @@ type RunResponse = {
   details?: string;
 };
 
+interface Judge0Response {
+  stdout?: string;
+  stderr?: string;
+  compile_output?: string;
+  message?: string;
+  status?: { description?: string };
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<RunResponse>
@@ -55,17 +63,17 @@ export default async function handler(
       }
     );
 
-    const json = (await r.json()) as Record<string, unknown>;
+    const json = (await r.json()) as Judge0Response;
 
     const output =
       json.stdout ||
       json.stderr ||
       json.compile_output ||
       json.message ||
-      (json.status as any)?.description ||
+      json.status?.description ||
       "No output";
 
-    return res.status(200).json({ output: output as string });
+    return res.status(200).json({ output });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("run error:", err);
