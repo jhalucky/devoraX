@@ -10,11 +10,12 @@ interface CodeEditorProps {
   language?: "python" | "cpp" | "javascript";
 }
 
-const languageMap: Record<CodeEditorProps["language"], number> = {
-  python: 71,
-  cpp: 54,
-  javascript: 63,
-};
+const languageMap = {
+    python: 71,
+    cpp: 54,
+    javascript: 63,
+  } as const;
+  
 
 export default function CodeEditor({ language = "python" }: CodeEditorProps) {
   const [code, setCode] = useState<string>("");
