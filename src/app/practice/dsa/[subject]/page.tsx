@@ -5,86 +5,194 @@ import { useParams } from "next/navigation";
 import MonacoEditor from "@monaco-editor/react";
 import problems from "@/data/leetcode_problems.json";
 import { headingFont, bodyFont } from "@/lib/fonts";
+import { XMarkIcon, PlayCircleIcon } from "@heroicons/react/24/outline";
+
+type Problem = {
+  id: string;
+  title: string;
+  difficulty: string;
+  description: string;
+  starterCode: {
+    python: string;
+    cpp: string;
+    js: string;
+  };
+  examples?: { input: string; output: string }[];
+};
+
+const languageOptions = ["python", "cpp", "javascript"] as const;
+type Language = typeof languageOptions[number];
 
 export default function DSACodeEditor() {
   const params = useParams();
   const problemId = params.subject;
-  const problem = problems.find((p) => p.id === problemId);
+  const problem: Problem | undefined = problems.find((p) => p.id === problemId);
 
+  const [language, setLanguage] = useState<Language>("python");
   const [code, setCode] = useState(problem?.starterCode?.python || "");
-  const [language, setLanguage] = useState<"python" | "cpp" | "javascript">("python");
-  const [outputs, setOutputs] = useState<{ input: string; output: string; status: string }[]>([]);
-  const [running, setRunning] = useState(false);
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+
+  // 🎥 State for video popup
+  const [video, setVideo] = useState<{ title: string; videoId: string } | null>(null);
+  const [loadingVideo, setLoadingVideo] = useState(false);
 
   if (!problem) {
     return (
-      <div className={`min-h-screen flex items-center justify-center text-gray-400 ${bodyFont.className}`}>
+      <div
+        className={`min-h-screen flex items-center justify-center text-gray-600 ${bodyFont.className}`}
+      >
         Problem not found ❌
       </div>
     );
   }
 
   const runCode = async () => {
-    if (!problem.examples) return;
-    setRunning(true);
-    const results: typeof outputs = [];
-
-    for (let i = 0; i < problem.examples.length; i++) {
-      const ex = problem.examples[i];
-      try {
-        const res = await fetch("/api/run", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            source_code: code,
-            language,
-            stdin: ex.input,
-          }),
-        });
-        const data = await res.json();
-        const output = (data.output || "").trim();
-        const status = output === ex.output.trim() ? "Passed ✅" : "Failed ❌";
-        results.push({ input: ex.input, output, status });
-      } catch (err) {
-        results.push({ input: ex.input, output: "Error running code", status: "Failed ❌" });
-      }
+    setIsRunning(true);
+    setOutput("");
+    try {
+      const res = await fetch("/api/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language,
+          source_code: code,
+          stdin: problem.examples?.[0]?.input || "",
+        }),
+      });
+      const data = await res.json();
+      setOutput(
+        (data as any).output || (data as any).error || "⚠️ No output received"
+      );
+    } catch (err: unknown) {
+      setOutput(err instanceof Error ? err.message : "Error running code");
+    } finally {
+      setIsRunning(false);
     }
+  };
 
-    setOutputs(results);
-    setRunning(false);
+  const clearEditor = () => {
+    setCode("");
+    setOutput("");
+  };
+
+  // 🎥 Fetch video from API (NeetCode video)
+  const handleVideoClick = async (title: string) => {
+    try {
+      setLoadingVideo(true);
+      const res = await fetch(`/api/youtube-search?query=${encodeURIComponent(title + " neetcode")}`);
+      const data = await res.json();
+      if (data.videoId) setVideo({ title: data.title, videoId: data.videoId });
+      else alert("No NeetCode video found for this problem.");
+    } catch (err) {
+      alert("Error fetching video");
+    } finally {
+      setLoadingVideo(false);
+    }
   };
 
   return (
-    <main className={`min-h-screen bg-gray-900 text-gray-100 px-6 py-10 ${bodyFont.className}`}>
+    <main
+      className={`min-h-screen bg-[#f9fafb] text-gray-900 px-6 py-10 ${bodyFont.className}`}
+    >
       <section className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Problem Description */}
-        <div className="p-6 bg-gray-800 rounded-xl shadow-md">
-          <h1 className={`text-3xl font-semibold mb-4 ${headingFont.className}`}>
-            {problem.title} <span className="text-sm font-normal text-gray-400 ml-2">({problem.difficulty})</span>
-          </h1>
-          <pre className="text-gray-200 whitespace-pre-wrap leading-relaxed">{problem.description}</pre>
-        </div>
-
-        {/* Code Editor */}
-        <div className="flex flex-col h-full">
-          {/* Language Dropdown */}
-          <div className="flex justify-end mb-2">
-            <label className="font-medium text-gray-200 mr-2">Language:</label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as any)}
-              className="bg-gray-700 text-gray-200 border border-gray-600 rounded px-2 py-1"
+        <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <h1
+              className={`text-3xl font-semibold mb-3 tracking-tight ${headingFont.className}`}
             >
-              <option value="python">Python</option>
-              <option value="cpp">C++</option>
-              <option value="javascript">JavaScript</option>
-            </select>
+              {problem.title}
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                ({problem.difficulty})
+              </span>
+            </h1>
           </div>
 
+          <pre className="text-gray-700 whitespace-pre-wrap leading-relaxed text-[15px]">
+            {problem.description}
+          </pre>
+
+          {problem.examples && (
+            <div className="mt-4">
+              <h2 className="font-semibold text-gray-800 mb-2">Examples:</h2>
+              {problem.examples.map((ex, i) => (
+                <div
+                  key={i}
+                  className="mb-3 p-3 bg-gray-50 border rounded-md text-sm"
+                >
+                  <p>
+                    <strong>Input:</strong> {ex.input}
+                  </p>
+                  <p>
+                    <strong>Output:</strong> {ex.output}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+      
+        <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-200">
+          {/* Top Toolbar */}
+          <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
+            <div className="flex items-center gap-3">
+              <label className="font-medium text-gray-700">Language:</label>
+              <select
+                value={language}
+                onChange={(e) => {
+                  const lang = e.target.value as Language;
+                  setLanguage(lang);
+                  setCode(problem.starterCode[lang]);
+                }}
+                className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {languageOptions.map((lang) => (
+                  <option key={lang} value={lang}>
+                    {lang.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearEditor}
+                className="text-sm px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Clear
+              </button>
+
+              <button
+                onClick={runCode}
+                disabled={isRunning}
+                className={`text-sm px-4 py-1.5 rounded-md text-white transition ${
+                  isRunning
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-indigo-600 hover:bg-indigo-700"
+                }`}
+              >
+                {isRunning ? "Running..." : "Run ▶"}
+              </button>
+            </div>
+            <button
+              onClick={() => handleVideoClick(problem.title)}
+              className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition"
+              title="Watch Video Solution"
+              disabled={loadingVideo}
+            >
+              <PlayCircleIcon className="w-6 h-6" />
+              <span className="hidden sm:inline text-sm font-medium">
+                {loadingVideo ? "Loading..." : "Video Solution"}
+              </span>
+            </button>
+          </div>
+
+          {/* Editor */}
           <MonacoEditor
             height="500px"
             language={language}
-            theme="vs-dark"
+            theme="vs-light"
             value={code}
             onChange={(value) => setCode(value || "")}
             options={{
@@ -94,32 +202,42 @@ export default function DSACodeEditor() {
               automaticLayout: true,
             }}
           />
-          <button
-            onClick={runCode}
-            disabled={running}
-            className={`mt-4 px-4 py-2 rounded-md text-white ${
-              running ? "bg-gray-600" : "bg-indigo-600 hover:bg-indigo-700"
-            } transition`}
-          >
-            {running ? "Running..." : "Run Code"}
-          </button>
 
-          {/* Test case outputs */}
-          {outputs.length > 0 && (
-            <div className="mt-4 space-y-2">
-              {outputs.map((o, idx) => (
-                <div key={idx} className="p-3 bg-gray-700 rounded-md">
-                  <p className="text-gray-300"><strong>Input:</strong> {o.input}</p>
-                  <p className="text-gray-100"><strong>Output:</strong> {o.output}</p>
-                  <p className={o.status.includes("Passed") ? "text-green-400" : "text-red-400"}>
-                    <strong>Status:</strong> {o.status}
-                  </p>
-                </div>
-              ))}
+          {/* Output */}
+          {output && (
+            <div className="mt-3 mx-3 mb-3 p-3 bg-gray-50 rounded-md border text-gray-800 text-sm whitespace-pre-wrap">
+              <strong>Output:</strong>
+              <pre>{output}</pre>
             </div>
           )}
         </div>
       </section>
+
+      {/* 🎥 Video Modal */}
+      {video && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl relative">
+            <button
+              onClick={() => setVideo(null)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-black transition"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <div className="aspect-video w-full rounded-t-2xl overflow-hidden">
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${video.videoId}`}
+                title={video.title}
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="p-4">
+              <h2 className="text-lg font-semibold">{video.title}</h2>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
