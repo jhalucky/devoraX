@@ -29,6 +29,7 @@ export default function PythonPracticePage() {
               key={p.id}
               className="group bg-[#0b0b0b] rounded-2xl p-5 shadow-sm border border-gray-800 hover:shadow-md transition"
             >
+                
               <div className="flex items-start justify-between">
                 <div className="pr-3">
                   <h3 className={`text-lg font-semibold mb-1 ${headingFont.className}`}>{p.instruction}</h3>
@@ -48,7 +49,7 @@ export default function PythonPracticePage() {
                   href={`/practice/python/${p.id}`}
                   className="text-indigo-400 font-medium hover:underline"
                 >
-                  Open
+                  Solve
                 </Link>
 
                 <span className="text-xs text-gray-500">
