@@ -33,7 +33,7 @@ export default function DSADashboard() {
   };
 
   return (
-    <main className={`min-h-screen bg-[#f9fafb] text-gray-900 px-6 py-12 ${bodyFont.className}`}>
+    <main className={`min-h-screen bg-black text-gray-100 px-6 py-12 ${bodyFont.className}`}>
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 text-center">
           <h1 className={`text-4xl font-semibold ${headingFont.className}`}>DSA Practice</h1>
@@ -46,12 +46,12 @@ export default function DSADashboard() {
           {problems.map((p: Problem) => (
             <article
               key={p.id}
-              className="group bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] transition-all"
+              className="group bg-gray-700 rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] transition-all"
             >
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className={`text-lg font-semibold mb-1 ${headingFont.className}`}>{p.title}</h3>
-                  <p className="text-sm text-gray-500 mb-2">{p.topics?.slice(0, 3).join(", ") ?? "General"}</p>
+                  <p className="text-sm text-white mb-2">{p.topics?.slice(0, 3).join(", ") ?? "General"}</p>
                 </div>
                 <span
                   className={`text-xs font-medium px-3 py-1 rounded-full ${
@@ -66,7 +66,7 @@ export default function DSADashboard() {
                 </span>
               </div>
 
-              <p className="text-sm text-gray-600 mt-2 line-clamp-3">{p.description?.slice(0, 150) ?? "No description available."}...</p>
+              <p className="text-sm text-white mt-2 line-clamp-3">{p.description?.slice(0, 150) ?? "No description available."}...</p>
 
               <div className="mt-5 flex items-center justify-between">
                 <Link

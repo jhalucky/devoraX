@@ -4,9 +4,9 @@ const JUDGE0_HOST = process.env.JUDGE0_HOST || "judge0-ce.p.rapidapi.com";
 const RAPIDAPI_KEY = process.env.X_RAPIDAPI_KEY;
 
 const languageMap: Record<string, number> = {
-  python: 71,     // Python 3
-  cpp: 54,        // C++ (GCC)
-  javascript: 63, // Node.js
+  python: 71,     
+  cpp: 54,        
+  javascript: 63, 
 };
 
 type RunRequest = {

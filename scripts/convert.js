@@ -1,8 +1,8 @@
 import fs from "fs";
 import csv from "csvtojson";
 
-const inputFile = "src/data/leetcode_problems.csv";
-const outputFile = "src/data/leetcode_problems.json";
+const inputFile = "src/data/python_questions.csv";
+const outputFile = "src/data/python_questions.json";
 
 csv()
   .fromFile(inputFile)
