@@ -9,8 +9,10 @@ export default function Navbar() {
 
   return (
     <nav className={`flex items-center justify-between px-6 py-4 shadow-sm bg-white border-b border-gray-200 ${bodyFont.className}`}>
-      <Link href="/" className={`text-2xl font-bold text-gray-900 ${headingFont.className}`}>
-        EngineersHub
+      <Link href="/" className={`text-2xl font-bold text-gray-900`}
+       style={{ fontFamily: "'Share Tech Mono', monospace" }}
+      >
+        De<span className="text-blue-500">V</span>ora<span className="text-blue-500">X</span>
       </Link>
 
       <div className="flex items-center space-x-6">
@@ -39,6 +41,9 @@ export default function Navbar() {
           </SignInButton>
         )}
       </div>
+      <style>
+        {`@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');`}
+      </style>
     </nav>
   );
 }
