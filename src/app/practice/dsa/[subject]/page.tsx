@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import  problems  from "@/data/leetcode_problems.json";
+import problems from "@/data/leetcode_problems.json";
 import { bodyFont } from "@/lib/fonts";
 
 type Language = "python" | "cpp" | "js";
@@ -26,15 +26,12 @@ export default function DSACodeEditor() {
   const params = useParams();
   const problemId = typeof params?.subject === "string" ? params.subject : undefined;
 
-  // ✅ Match problem safely
   const problem = problems.find((p) => p.id === problemId) as Problem | undefined;
 
   const [language, setLanguage] = useState<Language>("python");
   const [code, setCode] = useState<string>(problem?.starterCode?.[language] ?? "");
   const [output, setOutput] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
-
-  const [video, setVideo] = useState<{ title: string; videoId: string } | null>(null);
 
   if (!problem) {
     return (
@@ -71,29 +68,50 @@ export default function DSACodeEditor() {
     <div
       className={`min-h-screen flex flex-col md:flex-row bg-[#0a0a0a] text-gray-100 ${bodyFont.className}`}
     >
-      {/* Left: Problem Section */}
+      {/* 🧩 Left: Problem Section */}
       <div className="md:w-1/2 border-r border-gray-800 p-8 overflow-y-auto">
-        <h1 className="text-3xl font-bold mb-2">{problem.title}</h1>
-        <p className="text-gray-400 mb-3 text-sm">
-          Difficulty: {problem.difficulty}
-        </p>
-        <p className="text-gray-300 leading-relaxed">{problem.description}</p>
+        <div className="bg-[#111] border border-gray-800 rounded-xl p-6 shadow-inner">
+          <h1 className="text-3xl font-bold mb-2 text-white">{problem.title}</h1>
+          <p className="text-gray-400 mb-4 text-sm">
+            Difficulty:{" "}
+            <span
+              className={`font-medium ${
+                problem.difficulty === "Easy"
+                  ? "text-green-400"
+                  : problem.difficulty === "Medium"
+                  ? "text-yellow-400"
+                  : "text-red-400"
+              }`}
+            >
+              {problem.difficulty}
+            </span>
+          </p>
 
-        {problem.topics.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {problem.topics.map((topic) => (
-              <span
-                key={topic}
-                className="text-xs bg-gray-800 px-3 py-1 rounded-full text-gray-300"
-              >
-                {topic}
-              </span>
-            ))}
-          </div>
-        )}
+          {/* Problem description with proper spacing */}
+          <div
+            className="text-gray-300 text-sm md:text-base leading-relaxed space-y-4"
+            dangerouslySetInnerHTML={{
+              __html: problem.description.replace(/\n/g, "<br/><br/>"),
+            }}
+          />
+
+          {/* Topics */}
+          {problem.topics.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {problem.topics.map((topic) => (
+                <span
+                  key={topic}
+                  className="text-xs bg-gray-800/70 px-3 py-1 rounded-full text-gray-300 border border-gray-700"
+                >
+                  {topic}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Right: Code Editor Section */}
+      {/* 💻 Right: Code Editor Section */}
       <div className="md:w-1/2 flex flex-col p-6 gap-4">
         {/* Toolbar */}
         <div className="flex justify-between items-center border-b border-gray-700 pb-3">
@@ -105,7 +123,7 @@ export default function DSACodeEditor() {
                   setLanguage(lang);
                   setCode(problem.starterCode[lang]);
                 }}
-                className={`px-3 py-1 rounded-md text-sm font-semibold ${
+                className={`px-3 py-1 rounded-md text-sm font-semibold transition ${
                   language === lang
                     ? "bg-white text-black"
                     : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -144,18 +162,6 @@ export default function DSACodeEditor() {
         <div className="bg-[#111] border border-gray-700 rounded-lg p-4 text-sm whitespace-pre-wrap">
           {output || "▶ Output will appear here"}
         </div>
-
-        {/* Video Solution (optional) */}
-        {video && (
-          <div className="mt-4">
-            <h2 className="text-lg mb-2">{video.title}</h2>
-            <iframe
-              className="w-full aspect-video rounded-lg"
-              src={`https://www.youtube.com/embed/${video.videoId}`}
-              allowFullScreen
-            ></iframe>
-          </div>
-        )}
       </div>
     </div>
   );
