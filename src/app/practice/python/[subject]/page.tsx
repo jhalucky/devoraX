@@ -17,14 +17,17 @@ export default function PythonEditor() {
   const problemId =
     typeof params?.subject === "string" ? params.subject : undefined;
 
-  const problem = problems.find((p: Problem) => p.id === problemId);
+    const problem = (problems as Problem[]).find(
+        (p: Problem) => p.id === problemId
+      );
+    
 
   const [code, setCode] = useState<string>("");
   const [output, setOutput] = useState<string>("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [pyodide, setPyodide] = useState<any>(null);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [pyodide, setPyodide] = useState<unknown>(null);
 
-  // ✅ Load Pyodide
+
   useEffect(() => {
     const loadPyodide = async () => {
       const script = document.createElement("script");
@@ -55,7 +58,7 @@ export default function PythonEditor() {
     setOutput("");
 
     try {
-      // Combine user code and problem input/output into one script
+    
       const fullCode = `
 import json
 import sys
